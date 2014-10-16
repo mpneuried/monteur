@@ -14,12 +14,12 @@ class Recruse extends require( "mpbasic" )( config )
 	initialize: =>
 		@on "path", @checkpath
 		@on "directory", @recruse
-		@on "file", @processFile
+		@on "newfile", @processFile
 		return
 
 	start: ( _path )=>
 		@count = 0
-		@recruse( __dirname + _path )
+		@recruse( _path )
 		return
 
 	recruse: ( _path )=>
@@ -29,13 +29,14 @@ class Recruse extends require( "mpbasic" )( config )
 				@error "readdir", err
 				@emit "error", err
 				return
-			@debug "files", files
+			@debug "files", _path, files.length
 			@count += files.length
 			@emit( "path", _path + "/" + file, file ) for file in files
 			return
 		return
 
 	checkpath: ( _path, name )=>
+		@debug "checkpath", _path, name
 		fs.stat _path, ( err, stat )=>
 			if err
 				@error "stats", err
@@ -43,15 +44,17 @@ class Recruse extends require( "mpbasic" )( config )
 				return
 			if stat.isDirectory()
 				if name in @config.excludeFolders
-					@count--
 					return
+				@count--
 				@emit "directory", _path, name
 			else if stat.isFile()
 				if name in @config.excludeFiles
 					@count--
 					return
 				if path.extname( _path ) in @config.relevantExtensions
-					@emit( "file", _path, name, stat )
+					@emit( "newfile", _path, name, stat )
+				else
+					@count--
 			return
 		return
 
@@ -63,7 +66,7 @@ class Recruse extends require( "mpbasic" )( config )
 				@emit "error", err
 				return
 			@count--
-			@info "content", name, content.length, @count
+			@debug "content", _path, name, content.length, @count
 			@emit "file", _path, name, content
 			return
 		return

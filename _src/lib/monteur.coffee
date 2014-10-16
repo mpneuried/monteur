@@ -1,5 +1,8 @@
+path = require( "path" )
+
 Config = require( "./config" )
 
+setting = require( "./setting" )
 recruse = require( "./recruse" )
 
 class Monteur extends require( "mpbasic" )( Config )
@@ -8,6 +11,14 @@ class Monteur extends require( "mpbasic" )( Config )
 		@extend super, {}
 
 	initialize: =>
+		return
+
+	ask: ( cb )=>
+		return if @_check( cb )
+
+		setting.load @sourcePath, ( err, @settings )=>
+			cb.apply( @, arguments )
+			return
 		return
 
 	process: ( cb )=>
@@ -20,12 +31,41 @@ class Monteur extends require( "mpbasic" )( Config )
 			cb( err )
 			return
 
-		recruse.start( "" )
+		return if @_check( false )
 
-		return
+		recruse.start( @sourcePath )
+
+		return @
+
+	setSource: ( _path )=>
+		@sourcePath = path.resolve( _path )
+		@debug "source", @sourcePath
+		return @
+
+	setTarget: ( _path )=>
+		@targetPath = path.resolve( _path )
+		@debug "target", @targetPath
+		return @
 
 	processFile: ( path, name, content )=>
-		@debug "file", name
+		@info "file", path, name
 		return
+
+	_check: ( cb = false )=>
+		if not @sourcePath?.length
+			@_handleError( cb, "EMISSINGSOURCE" )
+			return true
+
+		if not @targetPath?.length
+			@_handleError( cb, "EMISSINGTARGET" )
+			return true
+
+		return false
+
+	ERRORS: =>
+		return @extend {}, super, 
+			"EMISSINGSOURCE": [ 409, "Please set the source Path with `monteur.seetSource( 'mypath' )`" ]
+			"EMISSINGTARGET": [ 409, "Please set the target Path with `monteur.setTarget( 'mypath' )`" ]
+
 
 module.exports = new Monteur()

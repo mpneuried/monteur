@@ -13,12 +13,16 @@ exports.run = ->
 		target: [ "t", "Target folder", "string" ]
 	)
 	cli.main ( args, options )->
-		setTimeout( ->
-			console.log "WAIT"
-		, 5000 )
-		monteur.process ( err )=>
-			cli.ok( "END" )
-			return
+		[ sourceFolder, targetFolder ] = args
+
+		monteur
+			.setSource( sourceFolder )
+			.setTarget( targetFolder )
+			.ask().then ->
+				this.process ( err )=>
+					cli.ok( "END" )
+					return
+				return
 		return
 	return
 
