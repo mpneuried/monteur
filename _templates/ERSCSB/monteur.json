@@ -1,0 +1,15 @@
+{
+	"questions":[
+		{
+			"question": "Title:",
+			"type": "text",
+			"var": "title"
+		},
+		{
+			"question": "Add GUI?",
+			"type": "bool",
+			"var": "gui",
+			"excludePaths": [ "_src/modules/gui.coffee" ]
+		}
+	]
+}
